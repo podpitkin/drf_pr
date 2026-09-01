@@ -1,3 +1,6 @@
-from django.shortcuts import render
+from rest_framework.generics import RetrieveUpdateDestroyAPIView
+from users.serializers import UserSerializer
 
-# Create your views here.
+
+class ProfileView(RetrieveUpdateDestroyAPIView):
+    serializer_class = UserSerializer

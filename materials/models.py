@@ -1,21 +1,106 @@
+from django.conf import settings
 from django.db import models
 
-class Course(models.Model):
-    name = models.CharField(max_length=50, verbose_name='Название курса', help_text='Укажите название курса')
-    preview = models.ImageField(upload_to='materials/previews', blank=True, null=True, verbose_name='Превью', help_text='Загрузите картинку')
-    discription = models.TextField(blank=True, null=True, verbose_name='Описание курса', help_text='Укажите описание курса')
 
-    class  Meta:
-        verbose_name = 'Курс'
-        verbose_name_plural = 'Курсы'
+class Course(models.Model):
+    owner = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='courses',
+        verbose_name='Владелец',
+        help_text='Укажите владельца курса',
+    )
+    name = models.CharField(
+        max_length=50, verbose_name="Название курса", help_text="Укажите название курса"
+    )
+    preview = models.ImageField(
+        upload_to="materials/previews",
+        blank=True,
+        null=True,
+        verbose_name="Превью",
+        help_text="Загрузите картинку",
+    )
+    discription = models.TextField(
+        blank=True,
+        null=True,
+        verbose_name="Описание курса",
+        help_text="Укажите описание курса",
+    )
+
+    class Meta:
+        verbose_name = "Курс"
+        verbose_name_plural = "Курсы"
 
 
 class Lesson(models.Model):
-    name = models.CharField(max_length=50, verbose_name='Название курса', help_text='Укажите название курса')
-    discription = models.TextField(blank=True, null=True, verbose_name='Описание урока', help_text='Укажите описание урока')
-    preview = models.ImageField(upload_to='materials/previews', blank=True, null=True, verbose_name='Превью', help_text='Загрузите картинку')
-    link = models.CharField(max_length=300, verbose_name='Ссылка на видео', help_text='Укажите ссылку на видео')
+    owner = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='owned_lessons',
+        verbose_name='Владелец',
+        help_text='Укажите владельца урока',
+    )
+    name = models.CharField(
+        max_length=50, verbose_name="Название курса", help_text="Укажите название курса"
+    )
+    discription = models.TextField(
+        blank=True,
+        null=True,
+        verbose_name="Описание урока",
+        help_text="Укажите описание урока",
+    )
+    preview = models.ImageField(
+        upload_to="materials/previews",
+        blank=True,
+        null=True,
+        verbose_name="Превью",
+        help_text="Загрузите картинку",
+    )
+    link = models.CharField(
+        max_length=300,
+        verbose_name="Ссылка на видео",
+        help_text="Укажите ссылку на видео",
+    )
+    course = models.ForeignKey(
+        Course,
+        on_delete=models.CASCADE,
+        related_name="lessons",
+        null=True,
+        blank=True,
+        verbose_name="Курс",
+        help_text="Укажите курс, к которому относится урок",
+    )
 
-    class  Meta:
-        verbose_name = 'Урок'
-        verbose_name_plural = 'Уроки'
+    class Meta:
+        verbose_name = "Урок"
+        verbose_name_plural = "Уроки"
+
+
+class Subscription(models.Model):
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='subscriptions',
+        verbose_name='Пользователь',
+        help_text='Укажите пользователя',
+    )
+    course = models.ForeignKey(
+        Course,
+        on_delete=models.CASCADE,
+        related_name='subscriptions',
+        verbose_name='Курс',
+        help_text='Укажите курс, на обновления которого подписывается пользователь',
+    )
+    created_at = models.DateTimeField(
+        auto_now_add=True,
+        verbose_name='Дата подписки',
+        help_text='Дата оформления подписки',
+    )
+
+    class Meta:
+        verbose_name = "Подписка"
+        verbose_name_plural = "Подписки"
+        unique_together = ("user", "course")
+
+    def __str__(self):
+        return f"{self.user} — {self.course}"

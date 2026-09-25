@@ -65,6 +65,8 @@ class Lesson(models.Model):
         Course,
         on_delete=models.CASCADE,
         related_name="lessons",
+        null=True,
+        blank=True,
         verbose_name="Курс",
         help_text="Укажите курс, к которому относится урок",
     )
@@ -72,3 +74,33 @@ class Lesson(models.Model):
     class Meta:
         verbose_name = "Урок"
         verbose_name_plural = "Уроки"
+
+
+class Subscription(models.Model):
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='subscriptions',
+        verbose_name='Пользователь',
+        help_text='Укажите пользователя',
+    )
+    course = models.ForeignKey(
+        Course,
+        on_delete=models.CASCADE,
+        related_name='subscriptions',
+        verbose_name='Курс',
+        help_text='Укажите курс, на обновления которого подписывается пользователь',
+    )
+    created_at = models.DateTimeField(
+        auto_now_add=True,
+        verbose_name='Дата подписки',
+        help_text='Дата оформления подписки',
+    )
+
+    class Meta:
+        verbose_name = "Подписка"
+        verbose_name_plural = "Подписки"
+        unique_together = ("user", "course")
+
+    def __str__(self):
+        return f"{self.user} — {self.course}"
